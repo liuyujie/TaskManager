@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>F8365C78-F43C-44F9-835E-30CF01EE8ADF</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>296DD6D0B06FA58BE3E7BC4AC3D31DC6D98CFD5A</key>
+		<string>https://github.com/shuangyu/TaskManager.git</string>
+	</dict>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>296DD6D0B06FA58BE3E7BC4AC3D31DC6D98CFD5A</key>
+		<string>TaskManager/</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/shuangyu/TaskManager.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>296DD6D0B06FA58BE3E7BC4AC3D31DC6D98CFD5A</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>296DD6D0B06FA58BE3E7BC4AC3D31DC6D98CFD5A</string>
+			<key>IDESourceControlWCCName</key>
+			<string>TaskManager</string>
+		</dict>
+	</array>
+</dict>
+</plist>
