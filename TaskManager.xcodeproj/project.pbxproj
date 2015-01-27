@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		674B7E8E1A778A0E00BFFAB5 /* NSDate+DateKit.m in Sources */ = {isa = PBXBuildFile; fileRef = 674B7E8D1A778A0E00BFFAB5 /* NSDate+DateKit.m */; };
 		67605AB31A7617DA00E0508C /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 67605AB21A7617DA00E0508C /* main.m */; };
 		67605AB61A7617DA00E0508C /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 67605AB51A7617DA00E0508C /* AppDelegate.m */; };
 		67605AB91A7617DA00E0508C /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 67605AB81A7617DA00E0508C /* ViewController.m */; };
@@ -29,6 +30,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		674B7E8C1A778A0E00BFFAB5 /* NSDate+DateKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDate+DateKit.h"; sourceTree = "<group>"; };
+		674B7E8D1A778A0E00BFFAB5 /* NSDate+DateKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDate+DateKit.m"; sourceTree = "<group>"; };
 		67605AAD1A7617DA00E0508C /* TaskManager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TaskManager.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		67605AB11A7617DA00E0508C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		67605AB21A7617DA00E0508C /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -87,6 +90,8 @@
 		67605AAF1A7617DA00E0508C /* TaskManager */ = {
 			isa = PBXGroup;
 			children = (
+				674B7E8C1A778A0E00BFFAB5 /* NSDate+DateKit.h */,
+				674B7E8D1A778A0E00BFFAB5 /* NSDate+DateKit.m */,
 				67605AD61A7617EE00E0508C /* HPTaskManager.h */,
 				67605AD71A7617EE00E0508C /* HPTaskManager.m */,
 				67605AD91A7617F500E0508C /* HPTaskCenter.h */,
@@ -234,6 +239,7 @@
 				67605AB61A7617DA00E0508C /* AppDelegate.m in Sources */,
 				67605AB31A7617DA00E0508C /* main.m in Sources */,
 				67605ADB1A7617F500E0508C /* HPTaskCenter.m in Sources */,
+				674B7E8E1A778A0E00BFFAB5 /* NSDate+DateKit.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

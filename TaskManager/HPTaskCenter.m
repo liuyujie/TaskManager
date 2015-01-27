@@ -31,24 +31,35 @@
 
 - (void)registerAppTasks
 {
-    // peridic task demo
-    NSCalendar *cal = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
-    NSDateFormatter *_formatter = [[NSDateFormatter alloc] init];
-    [_formatter setDateFormat:@"yyyy-MM-dd"];
-    [_formatter setCalendar:cal];
-    
-    NSDate *fDate = [_formatter dateFromString:@"2015-01-25"];
-    
     NSString *demoTaskKey = @"DemoPeriodicTask";
     NSString *adminUser   = @"Admin";
+
     
-    [[HPTaskManager defaultManager] registerPeriodicTask:demoTaskKey forUser:adminUser fromDate:fDate duration:10];
+//    // peridic task demo
+//    NSCalendar *cal = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+//    NSDateFormatter *_formatter = [[NSDateFormatter alloc] init];
+//    [_formatter setDateFormat:@"yyyy-MM-dd"];
+//    [_formatter setCalendar:cal];
+//    
+//    NSDate *fDate = [_formatter dateFromString:@"2015-01-25"];
+//    
+//
+//    [[HPTaskManager defaultManager] registerPeriodicTask:demoTaskKey forUser:adminUser fromDate:fDate duration:10];
+//    
+//    if ([[HPTaskManager defaultManager] periodicTaskIsValid:demoTaskKey forUser:adminUser]) {
+//        NSLog(@"valid task");
+//    } else {
+//        NSLog(@"invalid task");
+//    }
     
-    if ([[HPTaskManager defaultManager] periodicTaskIsValid:demoTaskKey forUser:adminUser]) {
-        NSLog(@"valid task");
-    } else {
-        NSLog(@"invalid task");
+    
+    [[HPTaskManager defaultManager] registerWeeklyTask:demoTaskKey forUser:adminUser taskTimes:1 onSpecifiedWeekdays:(HPTaskWeekdaySaturday | HPTaskWeekdaySunday)];
+    
+    
+    if ([[HPTaskManager defaultManager] completeTask:demoTaskKey forUser:adminUser onSpecifiedWeekdays:(HPTaskWeekdaySaturday | HPTaskWeekdaySunday)]) {
+        NSLog(@"completed weekly task");
     }
+    
     
     /*********************************** multi thread demo ***********************************/
    
@@ -140,6 +151,9 @@
 //            NSLog(error.domain);
 //        }
 //    }];
+    
+    
+    
 
 }
 

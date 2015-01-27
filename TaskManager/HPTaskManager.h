@@ -16,6 +16,18 @@ typedef enum {
     HPTaskTypeWeeklyTask,
 } HPTaskType;
 
+typedef enum {
+    HPTaskWeekdayMonday = 1 << 2,
+    HPTaskWeekdayTuesday = 1 << 3,
+    HPTaskWeekdayWednesday = 1 << 4,
+    HPTaskWeekdayThursday = 1 << 5,
+    HPTaskWeekdayFriday = 1 << 6,
+    HPTaskWeekdaySaturday = 1 << 7,
+    HPTaskWeekdaySunday = 1 << 1,
+} HPTaskWeekday;
+
+typedef NSUInteger HPTaskWeekdays;
+
 static NSString *kHPTaskManagerTaskKey = @"kHPTaskManagerTaskKey";
 static NSString *kHPTaskManagerTaskUser = @"kHPTaskManagerTaskUser";
 
@@ -86,7 +98,7 @@ typedef enum {
 
 // @deprecated
 // use - (BOOL)completeTask:(NSString *)taskKey forUser:(NSString *)userName taskType:(HPTaskType)taskType
-//- (BOOL)completeTask:(NSString *)taskKey forUser:(NSString *)userName;
+- (BOOL)completeTask:(NSString *)taskKey forUser:(NSString *)userName;
 
 // return FALSE :
 //      1.未注册过该任务
@@ -95,36 +107,35 @@ typedef enum {
 
 // @deprecated
 // use - (BOOL)taskHasCompleted:(NSString *)taskKey forUser:(NSString *)userName taskType:(HPTaskType)taskType
-//- (BOOL)taskHasCompleted:(NSString *)taskKey forUser:(NSString *)userName;
+- (BOOL)taskHasCompleted:(NSString *)taskKey forUser:(NSString *)userName;
 
 
 /****************************************** 每周任务 - key一天内失效 ******************************************/
 
 // return FALSE :
 //      1.已经注册过当天的任务
-//      2.当前日期 不是设定的 weekDay
+//      2.当前日期 不是设定的 weekday
 // return TRUE :
 //      1.注册成功
-
-- (BOOL)registerWeeklyTask:(NSString *)taskKey forUser:(NSString *)userName taskTimes:(NSInteger)maxTimes onSpecifiedWeeDay:(NSInteger)weekDay;
+- (BOOL)registerWeeklyTask:(NSString *)taskKey forUser:(NSString *)userName taskTimes:(NSInteger)maxTimes onSpecifiedWeekdays:(HPTaskWeekdays)weekdays;
 
 // return FALSE :
-//      1.当前日期 不是设定的 weekDay
+//      1.当前日期 不是设定的 weekday
 //      2.未注册过该任务
 //      3.任务已被完成
 // return TRUE :
 //      1.成功完成任务 ,任务数 -1
 
-- (BOOL)completeTask:(NSString *)taskKey forUser:(NSString *)userName onSpecifiedWeeDay:(NSInteger)weekDay;
+- (BOOL)completeTask:(NSString *)taskKey forUser:(NSString *)userName onSpecifiedWeekdays:(HPTaskWeekdays)weekdays;
 
 
 // return FALSE :
-//      1.当前日期 不是设定的 weekDay
+//      1.当前日期 不是设定的 weekday
 //      2.未注册过该任务
 // return TRUE :
 //      1.任务次数剩余量为0
 
-- (BOOL)weeklyTaskHasCompleted:(NSString *)taskKey forUser:(NSString *)userName onSpecifiedWeeDay:(NSInteger)weekDay;
+- (BOOL)weeklyTaskHasCompleted:(NSString *)taskKey forUser:(NSString *)userName onSpecifiedWeekdays:(HPTaskWeekdays)weekdays;
 
 /****************************************** 阶段任务 - key 自动失效 ******************************************/
 
@@ -159,7 +170,7 @@ typedef enum {
 
 - (NSString *)getDailyKey:(NSString *)taskKey forUser:(NSString *)userName;
 
-- (NSString *)getWeeklyKey:(NSString *)taskKey forUser:(NSString *)userName onSpecifiedWeeDay:(NSInteger)weekday;
+- (NSString *)getWeeklyKey:(NSString *)taskKey forUser:(NSString *)userName onSpecifiedWeekdays:(HPTaskWeekdays)weekdays;
 
 - (NSDate *)filterDateFromeILSTaskKey:(NSString *)ILSTaskKey;
 
@@ -173,11 +184,11 @@ typedef enum {
 
 - (BOOL)threadSafeTaskHasCompleted:(NSString *)taskKey forUser:(NSString *)userName taskType:(HPTaskType)taskType;
 
-- (void)registerWeeklyTask:(NSString *)taskKey forUser:(NSString *)userName taskTimes:(NSInteger)maxTimes onSpecifiedWeeDay:(NSInteger)weekDay withCompletionBlock:(HPTaskManagerCompletionBlock)completionBlock;
+- (void)registerWeeklyTask:(NSString *)taskKey forUser:(NSString *)userName taskTimes:(NSInteger)maxTimes onSpecifiedWeekdays:(HPTaskWeekdays)weekdays withCompletionBlock:(HPTaskManagerCompletionBlock)completionBlock;
 
-- (void)completeTask:(NSString *)taskKey forUser:(NSString *)userName onSpecifiedWeeDay:(NSInteger)weekDay withCompletionBlock:(HPTaskManagerCompletionBlock)completionBlock;
+- (void)completeTask:(NSString *)taskKey forUser:(NSString *)userName onSpecifiedWeekdays:(HPTaskWeekdays)weekdays withCompletionBlock:(HPTaskManagerCompletionBlock)completionBlock;
 
-- (BOOL)threadSafeWeeklyTaskHasCompleted:(NSString *)taskKey forUser:(NSString *)userName onSpecifiedWeeDay:(NSInteger)weekDay;
+- (BOOL)threadSafeWeeklyTaskHasCompleted:(NSString *)taskKey forUser:(NSString *)userName onSpecifiedWeekdays:(HPTaskWeekdays)weekdays;
 
 - (void)registerPeriodicTask:(NSString *)taskKey forUser:(NSString *)userName fromDate:(NSDate *)fDate toDate:(NSDate *)tDate withCompletionBlock:(HPTaskManagerCompletionBlock)completionBlock;
 

@@ -7,6 +7,7 @@
 //
 
 #import "HPTaskManager.h"
+#import "NSDate+DateKit.h"
 
 #define ILS_TASK_MANAGER_DAILY_KEY(uesrname, task_key)      ([NSString stringWithFormat:@"ILS_TASK_MANAGER_DAILY_KEY_%@_%@", (uesrname).uppercaseString, (task_key).uppercaseString])
 
@@ -44,13 +45,13 @@ static NSString *kHPTaskManagerDefaultUser = @"kHPTaskManagerDefaultUser";
 {
     self = [super init];
     if (self) {
-    
+        
         // NSGregorianCalendar , weekday 1-7 ; 1 means Sunday
         NSCalendar *cal = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
         _formatter = [[NSDateFormatter alloc] init];
         [_formatter setDateFormat:@"yyyy-MM-dd"];
         [_formatter setCalendar:cal];
-    
+        
         self.userDefaults = [[NSUserDefaults alloc] initWithSuiteName:kHPTaskManagerUserDefaultSuiteName];
         
         _taskQueue = dispatch_queue_create("HPTaskManager+ThreadSafe", DISPATCH_QUEUE_CONCURRENT);
@@ -180,13 +181,13 @@ static NSString *kHPTaskManagerDefaultUser = @"kHPTaskManagerDefaultUser";
 
 /****************************************** 每周任务 ******************************************/
 
-- (BOOL)registerWeeklyTask:(NSString *)taskKey forUser:(NSString *)userName taskTimes:(NSInteger)maxTimes onSpecifiedWeeDay:(NSInteger)weekDay
+- (BOOL)registerWeeklyTask:(NSString *)taskKey forUser:(NSString *)userName taskTimes:(NSInteger)maxTimes onSpecifiedWeekdays:(HPTaskWeekdays)weekdays
 {
     if (maxTimes < 0 || !taskKey) {
         return FALSE;
     }
     
-    NSString *weeklyKey = [self getWeeklyKey:taskKey forUser:userName onSpecifiedWeeDay:weekDay];
+    NSString *weeklyKey = [self getWeeklyKey:taskKey forUser:userName onSpecifiedWeekdays:weekdays];
     
     if (!weeklyKey) {
         return FALSE;
@@ -212,12 +213,12 @@ static NSString *kHPTaskManagerDefaultUser = @"kHPTaskManagerDefaultUser";
     return TRUE;
 }
 
-- (BOOL)completeTask:(NSString *)taskKey forUser:(NSString *)userName onSpecifiedWeeDay:(NSInteger)weekDay
+- (BOOL)completeTask:(NSString *)taskKey forUser:(NSString *)userName onSpecifiedWeekdays:(HPTaskWeekdays)weekdays
 {
     if (!taskKey) {
         return FALSE;
     }
-    NSString *weeklyKey = [self getWeeklyKey:taskKey forUser:userName onSpecifiedWeeDay:weekDay];
+    NSString *weeklyKey = [self getWeeklyKey:taskKey forUser:userName onSpecifiedWeekdays:weekdays];
     
     if (!weeklyKey) {
         return FALSE;
@@ -239,13 +240,13 @@ static NSString *kHPTaskManagerDefaultUser = @"kHPTaskManagerDefaultUser";
 }
 
 
-- (BOOL)weeklyTaskHasCompleted:(NSString *)taskKey forUser:(NSString *)userName onSpecifiedWeeDay:(NSInteger)weekDay
+- (BOOL)weeklyTaskHasCompleted:(NSString *)taskKey forUser:(NSString *)userName onSpecifiedWeekdays:(HPTaskWeekdays)weekdays
 {
     if (!taskKey) {
         return FALSE;
     }
     
-    NSString *weeklyKey = [self getWeeklyKey:taskKey forUser:userName onSpecifiedWeeDay:weekDay];
+    NSString *weeklyKey = [self getWeeklyKey:taskKey forUser:userName onSpecifiedWeekdays:weekdays];
     
     if (!weeklyKey) {
         return FALSE;
@@ -260,6 +261,7 @@ static NSString *kHPTaskManagerDefaultUser = @"kHPTaskManagerDefaultUser";
     return [taskTimes integerValue] <= 0;
 }
 
+
 /****************************************** 阶段任务 - key 自动失效 ******************************************/
 
 - (BOOL)registerPeriodicTask:(NSString *)taskKey forUser:(NSString *)userName fromDate:(NSDate *)fDate toDate:(NSDate *)tDate
@@ -273,11 +275,9 @@ static NSString *kHPTaskManagerDefaultUser = @"kHPTaskManagerDefaultUser";
     if ([self objectForKey:periodicKey]) {
         return FALSE;
     }
-
-    
     [self setObject:@{kHPTaskManagerPeriodicTaskFDataKey:fDate,
                       kHPTaskManagerPeriodicTaskTDataKey:tDate
-                    } forKey:periodicKey];
+                      } forKey:periodicKey];
     return TRUE;
 }
 
@@ -371,24 +371,38 @@ static NSString *kHPTaskManagerDefaultUser = @"kHPTaskManagerDefaultUser";
     return [NSString stringWithFormat:@"%@_%@#%@", taskKey, userName, timeStamp];
 }
 
-- (NSString *)getWeeklyKey:(NSString *)taskKey forUser:(NSString *)userName onSpecifiedWeeDay:(NSInteger)weekday
+- (NSString *)getWeeklyKey:(NSString *)taskKey forUser:(NSString *)userName onSpecifiedWeekdays:(HPTaskWeekdays)weekdays
 {
     if (!userName) {
         userName = kHPTaskManagerDefaultUser;
     }
+    
     NSDate *now = [NSDate new];
     
     NSDateComponents *components = [_formatter.calendar components: NSCalendarUnitWeekday fromDate:now];
     
-    if (components.weekday != weekday) {
+    NSUInteger m = pow(2, components.weekday);
+    
+    NSLog(@"%ld", (long)(m & weekdays));
+    // 不在设定的时间内
+    if ((m & weekdays) == 0) {
         return nil;
+    }
+    
+    NSString *previousKey = [self getPreviousWeeklyKey:taskKey forUser:userName];
+    
+    NSDate *previousRegisterDate = [self filterDateFromeILSTaskKey:previousKey];
+    
+    // 同一周内，不使用新key
+    if (previousRegisterDate && [previousRegisterDate inSameWeek:now]) {
+        return previousKey;
     }
     
     NSString *timeStamp = [_formatter stringFromDate:now];
     
     // 加上 timeStamp 防止两次登陆都是 同一 weekday 引发bug
     
-    return [NSString stringWithFormat:@"%@_%@_%ld#%@", taskKey, userName, (long)weekday , timeStamp];
+    return [NSString stringWithFormat:@"%@_%@_%ld#%@", taskKey, userName, (long)weekdays , timeStamp];
 }
 
 - (NSDate *)filterDateFromeILSTaskKey:(NSString *)ILSTaskKey
@@ -454,7 +468,7 @@ static NSString *kHPTaskManagerDefaultUser = @"kHPTaskManagerDefaultUser";
                                                 userInfo:@{kHPTaskManagerTaskKey:taskKey,
                                                            kHPTaskManagerTaskUser:userName}]);
             }
-
+            
         }
         
         NSString *previousKey = [self getPreviousDailyKey:taskKey forUser:userName];
@@ -546,9 +560,8 @@ static NSString *kHPTaskManagerDefaultUser = @"kHPTaskManagerDefaultUser";
 }
 
 
-- (void)registerWeeklyTask:(NSString *)taskKey forUser:(NSString *)userName taskTimes:(NSInteger)maxTimes onSpecifiedWeeDay:(NSInteger)weekDay withCompletionBlock:(HPTaskManagerCompletionBlock)completionBlock
+- (void)registerWeeklyTask:(NSString *)taskKey forUser:(NSString *)userName taskTimes:(NSInteger)maxTimes onSpecifiedWeekdays:(HPTaskWeekdays)weekdays withCompletionBlock:(HPTaskManagerCompletionBlock)completionBlock
 {
-
     dispatch_barrier_async(_taskQueue, ^{
         
         if (maxTimes < 0 || !taskKey) {
@@ -561,7 +574,7 @@ static NSString *kHPTaskManagerDefaultUser = @"kHPTaskManagerDefaultUser";
             return;
         }
         
-        NSString *weeklyKey = [self getWeeklyKey:taskKey forUser:userName onSpecifiedWeeDay:weekDay];
+        NSString *weeklyKey = [self getWeeklyKey:taskKey forUser:userName onSpecifiedWeekdays:weekdays];
         
         if (!weeklyKey) {
             if (completionBlock) {
@@ -603,7 +616,7 @@ static NSString *kHPTaskManagerDefaultUser = @"kHPTaskManagerDefaultUser";
     
 }
 
-- (void)completeTask:(NSString *)taskKey forUser:(NSString *)userName onSpecifiedWeeDay:(NSInteger)weekDay withCompletionBlock:(HPTaskManagerCompletionBlock)completionBlock
+- (void)completeTask:(NSString *)taskKey forUser:(NSString *)userName onSpecifiedWeekdays:(HPTaskWeekdays)weekdays withCompletionBlock:(HPTaskManagerCompletionBlock)completionBlock
 {
     dispatch_barrier_async(_taskQueue, ^{
         
@@ -615,7 +628,7 @@ static NSString *kHPTaskManagerDefaultUser = @"kHPTaskManagerDefaultUser";
             }
             return;
         }
-        NSString *weeklyKey = [self getWeeklyKey:taskKey forUser:userName onSpecifiedWeeDay:weekDay];
+        NSString *weeklyKey = [self getWeeklyKey:taskKey forUser:userName onSpecifiedWeekdays:weekdays];
         
         if (!weeklyKey) {
             if (completionBlock) {
@@ -660,14 +673,14 @@ static NSString *kHPTaskManagerDefaultUser = @"kHPTaskManagerDefaultUser";
     });
 }
 
-- (BOOL)threadSafeWeeklyTaskHasCompleted:(NSString *)taskKey forUser:(NSString *)userName onSpecifiedWeeDay:(NSInteger)weekDay
+- (BOOL)threadSafeWeeklyTaskHasCompleted:(NSString *)taskKey forUser:(NSString *)userName onSpecifiedWeekdays:(HPTaskWeekdays)weekdays
 {
     __block BOOL taskHasCompleted = FALSE;
     
     dispatch_sync(_taskQueue, ^{
         
         if (taskKey) {
-            NSString *weeklyKey = [self getWeeklyKey:taskKey forUser:userName onSpecifiedWeeDay:weekDay];
+            NSString *weeklyKey = [self getWeeklyKey:taskKey forUser:userName onSpecifiedWeekdays:weekdays];
             
             if (weeklyKey) {
                 NSNumber *taskTimes = [self objectForKey:weeklyKey];
@@ -677,10 +690,10 @@ static NSString *kHPTaskManagerDefaultUser = @"kHPTaskManagerDefaultUser";
                 }
             }
         }
-       
+        
     });
     return taskHasCompleted;
-
+    
 }
 
 - (void)registerPeriodicTask:(NSString *)taskKey forUser:(NSString *)userName fromDate:(NSDate *)fDate toDate:(NSDate *)tDate withCompletionBlock:(HPTaskManagerCompletionBlock)completionBlock
@@ -707,7 +720,7 @@ static NSString *kHPTaskManagerDefaultUser = @"kHPTaskManagerDefaultUser";
             }
             return;
         }
-
+        
         [self setObject:@{kHPTaskManagerPeriodicTaskFDataKey:fDate,
                           kHPTaskManagerPeriodicTaskTDataKey:tDate
                           } forKey:periodicKey];
